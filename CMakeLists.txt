@@ -65,6 +65,7 @@ if(WITH_EXAMPLES)
     set(EXAMPLES
             examples/lescan.cc
             examples/blelogger.cc
+            examples/read_device_name.cc
             examples/bluetooth.cc
             examples/lescan_simple.cc
             examples/temperature.cc)

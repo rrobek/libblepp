@@ -196,18 +196,19 @@ namespace BLEPP
 		buf.resize(bufsize);
 	}
 
-	void BLEGATTStateMachine::connect_blocking(const std::string& address)
+
+    void BLEGATTStateMachine::connect_blocking(const std::string& address, ConnectMode mode)
 	{
-		connect(address, true);
+        connect(address, true, mode);
 	}
 
 
-	void BLEGATTStateMachine::connect_nonblocking(const std::string& address)
+    void BLEGATTStateMachine::connect_nonblocking(const std::string& address, ConnectMode mode)
 	{
-		connect(address, false);
+        connect(address, false, mode);
 	}
 
-	void BLEGATTStateMachine::connect(const std::string& address, bool blocking, bool pubaddr, std::string device)
+    void BLEGATTStateMachine::connect(const std::string& address, bool blocking, ConnectMode mode, bool pubaddr, std::string device)
 	{
 		ENTER();
 
@@ -270,22 +271,44 @@ namespace BLEPP
 		addr.l2_psm = 0;
 		addr.l2_cid = htobs(LE_ATT_CID);
 
-
 		//Address type: Low Energy PUBLIC or RANDOM
 		if (pubaddr) addr.l2_bdaddr_type = BDADDR_LE_PUBLIC;
 		else addr.l2_bdaddr_type = BDADDR_LE_RANDOM;
+
+        // Security Low
+        int level = BT_SECURITY_LOW;
+        if(setsockopt(sock, SOL_BLUETOOTH, BT_SECURITY, &level,
+                             sizeof(level)) == -1) {
+            reset();
+            throw SocketSetSockOptFailed(std::string("Set BT_SECURITY: ") + strerror(errno));
+        }
+
+        if(mode == ConnectMode::LE)
+        {
+            // LE mode
+            int tr_mode = BT_MODE_LE_FLOWCTL;
+            if(setsockopt(sock, SOL_BLUETOOTH, BT_MODE, &tr_mode,
+                                 sizeof(level)) == -1) {
+                reset();
+                throw SocketSetSockOptFailed(std::string("Set BT_MODE: ") + strerror(errno));
+            }
+            // 1 Mbps
+            int phy = BT_PHY_LE_1M_TX | BT_PHY_LE_1M_RX;
+            if(setsockopt(sock, SOL_BLUETOOTH, BT_PHY, &phy,
+                                 sizeof(level)) == -1) {
+                reset();
+                throw SocketSetSockOptFailed(std::string("Set BT_PHY: ") + strerror(errno));
+            }
+        }
 
 		if(log_l2cap_options(sock) == -1)
 		{
 			reset();
 			throw SocketGetSockOptFailed(strerror(errno));
 		}
+
+
 		//Construct an address from the address string
-		
-		
-		
-
-
 		//Can also use bacpy to copy addresses about
 		int rr = str2ba(address.c_str(), &addr.l2_bdaddr);
 		LOG(Debug, "address = " << address);

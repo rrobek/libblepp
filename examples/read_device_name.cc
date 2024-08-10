@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 	
 	//This is how to use the blocking interface. It is very simple. You provide the main 
 	//loop and just hammer on the state machine struct. 
-	gatt.connect_blocking(argv[1]);
+    gatt.connect_blocking(argv[1], BLEGATTStateMachine::ConnectMode::LE);
 	for(;;)
 		gatt.read_and_process_next();
 

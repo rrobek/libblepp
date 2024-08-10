@@ -260,6 +260,11 @@ namespace BLEPP
 	{
 		public:
 
+            enum class ConnectMode {
+                Basic,
+                LE
+            };
+
 			struct Disconnect
 			{
 				enum Reason{
@@ -333,9 +338,9 @@ namespace BLEPP
 			~BLEGATTStateMachine();
 
 			
-			void connect_blocking(const std::string& addres);
-			void connect_nonblocking(const std::string& addres);
-			void connect(const std::string& addresa, bool blocking, bool pubaddr = true, std::string device = "");
+            void connect_blocking(const std::string& addres, ConnectMode = ConnectMode::Basic);
+            void connect_nonblocking(const std::string& addres, ConnectMode = ConnectMode::Basic);
+            void connect(const std::string& addresa, bool blocking, ConnectMode = ConnectMode::Basic, bool pubaddr = true, std::string device = "");
 			void close();
 
 			int socket();
@@ -370,6 +375,7 @@ namespace BLEPP
 	class SocketAllocationFailed: public std::runtime_error { using runtime_error::runtime_error; };
 	class SocketBindFailed: public std::runtime_error { using runtime_error::runtime_error; };
 	class SocketGetSockOptFailed: public std::runtime_error { using runtime_error::runtime_error; };
-	class SocketConnectFailed: public std::runtime_error { using runtime_error::runtime_error; };
+    class SocketSetSockOptFailed: public std::runtime_error { using runtime_error::runtime_error; };
+    class SocketConnectFailed: public std::runtime_error { using runtime_error::runtime_error; };
 }
 #endif
